@@ -1,0 +1,62 @@
+import pygame
+import pymunk
+import pymunk.pygame_util
+
+pygame.init()
+
+# Screen dimensions
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('2D Physics Game')
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Pymunk setup
+space = pymunk.Space()
+space.gravity = (0, 900)
+draw_options = pymunk.pygame_util.DrawOptions(screen)
+
+# Static floor
+floor = pymunk.Segment(space.static_body, (0, HEIGHT-50), (WIDTH, HEIGHT-50), 5)
+floor.friction = 1.0
+space.add(floor)
+
+def create_ball(space, pos):
+    body = pymunk.Body(1, 1666)
+    body.position = pos
+    shape = pymunk.Circle(body, 30)
+    shape.friction = 0.5
+    space.add(body, shape)
+    return shape
+
+balls = []
+
+# Game loop
+clock = pygame.time.Clock()
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:  # Left mouse button
+                pos = pygame.mouse.get_pos()
+                ball = create_ball(space, pos)
+                balls.append(ball)
+
+    # Clear screen
+    screen.fill(WHITE)
+
+    # Draw physics objects
+    space.debug_draw(draw_options)
+
+    # Step the physics engine
+    space.step(1/60.0)
+
+    # Update the display
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
